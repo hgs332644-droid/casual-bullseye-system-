@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2775.1">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="ja"&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;meta name="viewport" content="width=device-width,initial-scale=1"&gt;</p>
+<p class="p1">&lt;title&gt;Bullseye&lt;/title&gt;</p>
+<p class="p1">&lt;style&gt;body{font-family:sans-srif;background:#111;color:#0f0;padding:16px}button,input{font-size:16px;margin:4px}#out{font-size:32px;margin:16px 0}&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;&lt;body&gt;</p>
+<p class="p1">&lt;h2&gt;BULLSEYE&lt;/h2&gt;</p>
+<p class="p1">&lt;div&gt;BE: &lt;span id="be"&gt;未設定&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;div id="out"&gt;--- / ---&lt;/div&gt;</p>
+<p class="p1">&lt;button id="setHere"&gt;現在地をブルズアイに設定&lt;/button&gt;</p>
+<p class="p1">&lt;button id="share"&gt;共有URLをコピー&lt;/button&gt;</p>
+<p class="p1">&lt;h3&gt;アルファチェック&lt;/h3&gt;</p>
+<p class="p1">&lt;input id="ap" placeholder="緯度,経度 (確認地点)"&gt;</p>
+<p class="p1">&lt;button id="alpha"&gt;確認地点の方位/距離&lt;/button&gt;</p>
+<p class="p1">&lt;div id="aout"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">const R=6371000,rad=d=&gt;d*Math.PI/180,deg=r=&gt;r*180/Math.PI;</p>
+<p class="p1">function bd(a,b){const p1=rad(a[0]),p2=rad(b[0]),dl=rad(b[1]-a[1]);</p>
+<p class="p1">const y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);</p>
+<p class="p1">const brg=(deg(Math.atan2(y,x))+360)%360;</p>
+<p class="p1">const h=Math.sin((p2-p1)/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;</p>
+<p class="p1">return [Math.round(brg),Math.round(2*R*Math.asin(Math.sqrt(h)))];}</p>
+<p class="p1">const fmt=([b,d])=&gt;String(b).padStart(3,'0')+' / '+(d&gt;=1000?(d/1000).toFixed(2)+'km':d+'m');</p>
+<p class="p1">let be=null,me=null;</p>
+<p class="p1">const q=new URLSearchParams(location.search);</p>
+<p class="p1">if(q.get('be')){be=q.get('be').split(',').map(Number);}</p>
+<p class="p1">function show(){document.getElementById('be').textContent=be?be.map(v=&gt;v.toFixed(5)).join(','):'未設定';</p>
+<p class="p1">if(be&amp;&amp;me)document.getElementById('out').textContent='BE '+fmt(bd(be,me));}</p>
+<p class="p1">navigator.geolocation.watchPosition(p=&gt;{me=[p.coords.latitude,p.coords.longitude];show();},e=&gt;alert(e.message),{enableHighAccuracy:true});</p>
+<p class="p1">document.getElementById('setHere').onclick=()=&gt;{if(me){be=[...me];history.replaceState(null,'','?be='+be.join(','));show();}};</p>
+<p class="p1">document.getElementById('share').onclick=()=&gt;{if(be){const u=location.origin+location.pathname+'?be='+be.map(v=&gt;v.toFixed(6)).join(',');navigator.clipboard.writeText(u);alert(u);}};</p>
+<p class="p1">document.getElementById('alpha').onclick=()=&gt;{const a=document.getElementById('ap').value.split(',').map(Number);</p>
+<p class="p1">if(be&amp;&amp;a.length==2)document.getElementById('aout').textContent='確認地点: BE '+fmt(bd(be,a));};</p>
+<p class="p1">show();</p>
+<p class="p1">&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;</p>
+</body>
+</html>
