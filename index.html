@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bullseye</title>
+<style>body{font-family:sans-serif;background:#111;color:#0f0;padding:16px}button,input{font-size:16px;margin:4px}#out{font-size:32px;margin:16px 0}</style>
+</head><body>
+<h2>BULLSEYE</h2>
+<div>BE: <span id="be">未設定</span></div>
+<div id="out">--- / ---</div>
+<button id="setHere">現在地をブルズアイに設定</button>
+<button id="share">共有URLをコピー</button>
+<h3>アルファチェック</h3>
+<input id="ap" placeholder="緯度,経度 (確認地点)">
+<button id="alpha">確認地点の方位/距離</button>
+<div id="aout"></div>
+<script>
+const R=6371000,rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
+function bd(a,b){const p1=rad(a[0]),p2=rad(b[0]),dl=rad(b[1]-a[1]);
+const y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+const brg=(deg(Math.atan2(y,x))+360)%360;
+const h=Math.sin((p2-p1)/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+return [Math.round(brg),Math.round(2*R*Math.asin(Math.sqrt(h)))];}
+const fmt=([b,d])=>String(b).padStart(3,'0')+' / '+(d>=1000?(d/1000).toFixed(2)+'km':d+'m');
+let be=null,me=null;
+const q=new URLSearchParams(location.search);
+if(q.get('be')){be=q.get('be').split(',').map(Number);}
+function show(){document.getElementById('be').textContent=be?be.map(v=>v.toFixed(5)).join(','):'未設定';
+if(be&&me)document.getElementById('out').textContent='BE '+fmt(bd(be,me));}
+navigator.geolocation.watchPosition(p=>{me=[p.coords.latitude,p.coords.longitude];show();},e=>alert(e.message),{enableHighAccuracy:true});
+document.getElementById('setHere').onclick=()=>{if(me){be=[...me];history.replaceState(null,'','?be='+be.join(','));show();}};
+document.getElementById('share').onclick=()=>{if(be){const u=location.origin+location.pathname+'?be='+be.map(v=>v.toFixed(6)).join(',');navigator.clipboard.writeText(u);alert(u);}};
+document.getElementById('alpha').onclick=()=>{const a=document.getElementById('ap').value.split(',').map(Number);
+if(be&&a.length==2)document.getElementById('aout').textContent='確認地点: BE '+fmt(bd(be,a));};
+show();
+</script></body></html>
